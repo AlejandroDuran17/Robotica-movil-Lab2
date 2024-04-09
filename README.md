@@ -58,6 +58,90 @@ Al ser un sistema muy versartil al tener una contruccion modular permite una alt
 
 ## ¿Qué hacen los progrmas de python?
 
+### Programa #1: Publicador de velocidades para turtlesim (pypubvel.py)
+Este programa Python esta pensado para ir publicando comandos de velocidad angular y lineal aleatorios en un robot simulado del turtlesim. Utiliza ROS para interactuar con el sistema de control del robot.
+```
+#!/usr/bin/env python 1
+2
+import rospy 3
+from geometry_msgs.msg import Twist 4
+from random import random 5
+6
+if __name__ == ’__main__’: 7
+# Create a publisher on topic turtle1/cmd_vel, type geometry_msgs/Twist 8
+pub = rospy.Publisher(’turtle1/cmd_vel’, Twist, queue_size=1000) 9
+rospy.init_node(’pypubvel’, anonymous=False) 10
+11
+rate = rospy.Rate(2) 12
+13
+# Similar to while(ros::ok()) 14
+while not rospy.is_shutdown(): 15
+# Create and populate new Twist message 16
+msg = Twist() 17
+msg.linear.x = random() 18
+msg.angular.z = 2*random() - 1 19
+20
+# Similar to ROS_INFO_STREAM macro, log information. 21
+rospy.loginfo(’Sending random velocity command:’ + 22
+’ linear=’ + str(msg.linear.x) + ’ angular=’ + str(msg.angular.z)) 23
+24
+# Publish the message and wait on rate. 25
+pub.publish(msg) 26
+rate.sleep() 
+```
+Funciones de ROS utilizadas:
+rospy.init_node(): Inicializa un nodo ROS.
+rospy.Publisher(): Crea un publicador en un determinado tema con un tipo de mensaje específico.
+rospy.Rate(): Crea un objeto que permite dormir el tiempo necesario para alcanzar una cierta frecuencia.
+Creación del publicador y configuración del nodo: Se crea un publicador en el tema "turtle1/cmd_vel" con el tipo de mensaje Twist. También se inicializa el nodo ROS.
+
+Bucle principal: Se establece un bucle principal que se ejecuta mientras el nodo no se haya apagado.
+
+Funciones de ROS utilizadas:
+rospy.is_shutdown(): Verifica si el nodo ROS ha sido apagado.
+Generación de un mensaje Twist aleatorio: En cada iteración del bucle, se crea un nuevo mensaje Twist con valores aleatorios para la velocidad lineal y angular.
+
+Registro de información y publicación del mensaje: Se registra la información del mensaje generado y se publica en el tema especificado.
+
+Funciones de ROS utilizadas:
+rospy.loginfo(): Registra un mensaje informativo en el registro de ROS.
+pub.publish(): Publica un mensaje en el tema especificado.
+Espera para cumplir con la frecuencia deseada: Después de publicar el mensaje, el programa espera el tiempo necesario para cumplir con la frecuencia especificada.
+
+
+### Programa #2: Subcripción a tema turtle1/pose (pysubpose.py)
+
+Con este programa de Python se genera la subspricion a los mensajes de posición del robot simulado con turtlesim, y al mismo tiempo buscamos registrar esta información.
+```
+#!/usr/bin/env python 1
+2
+import rospy
+from turtlesim.msg import Pose 4
+5
+def poseMessageReceived(message): 6
+rospy.loginfo(’position=(’ + str(message.x) + ’,’ + str(message.y) + 7
+’)’ + ’ direction=’ + str(message.theta)) 8
+9
+if __name__ == ’__main__’: 10
+rospy.init_node(’pysubpose’, anonymous=False) 11
+sub = rospy.Subscriber(’turtle1/pose’, Pose, poseMessageReceived) 12
+13
+rospy.spin()
+```
+Funciones de ROS utilizadas:
+rospy.init_node(): Inicializa un nodo ROS.
+rospy.Subscriber(): Crea un suscriptor que escucha un determinado tema y llama a una función de devolución de llamada cuando se recibe un mensaje.
+rospy.spin(): Mantiene el nodo en funcionamiento hasta que se apague explícitamente.
+Definición de la función de devolución de llamada: Se define una función poseMessageReceived() que se ejecutará cada vez que se reciba un mensaje en el tema "turtle1/pose". Esta función simplemente registra la posición y dirección del mensaje recibido.
+rospy.loginfo(): Registra un mensaje informativo en el registro de ROS.
+Configuración del nodo y suscripción al tema: Se inicializa el nodo ROS y se configura un suscriptor en el tema "turtle1/pose" para que llame a la función de devolución de llamada poseMessageReceived() cada vez que recibe un mensaje en ese tema.
+rospy.init_node(): Inicializa un nodo ROS.
+rospy.Subscriber(): Crea un suscriptor que escucha un determinado tema y llama a una función de devolución de llamada cuando se recibe un mensaje.
+Mantenimiento del nodo en funcionamiento: Se llama a rospy.spin() para mantener el nodo en funcionamiento y esperar la llegada de mensajes.
+rospy.spin(): Mantiene el nodo en funcionamiento hasta que se apague explícitamente.
+
+Para resunmir, el programa #1 controla la generación y publicación de comandos de velocidad aleatorios para el robot simulado, mientras que el programa #2 genera la subscripcion a los mensajes de posición del mismo robot y registra esta información. Ambos programas utilizan ROS para interactuar con el sistema de control del robot y facilitar la comunicación entre los diferentes componentes del sistema.
+
 ## Plano donde el Turtlesim puede moverse
 
 ## Como usar algún servicio en Python
